@@ -89,7 +89,7 @@ app.get('/api/classify-number', async (req, res) => {
         funFact = response.data.text;
       } catch (error) {
         funFact = 'No fun fact available at the moment.';
-      };
+      }
 
     // response object
     const result = {
@@ -105,4 +105,4 @@ app.get('/api/classify-number', async (req, res) => {
 });
 
 // Export the app
-modules.export = serverless(app);
+module.export = serverless(app);
