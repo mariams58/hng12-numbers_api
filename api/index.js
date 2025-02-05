@@ -54,9 +54,9 @@ function isArmstrong(n) {
     let numDigits = n.length;
     let sumPow = 0;
     for (let i =0; i < numDigits; i++)   {
-        sum += Math.pow(n.charAt(i), numDigits);
+        sumPow += Math.pow(n.charAt(i), numDigits);
     }
-    return sum === n;
+    return sumPow === n;
 }
 
 // GET endpoint:  /api/classify-number
@@ -104,5 +104,5 @@ app.get('/api/classify-number', async (req, res) => {
     return res.status(200).json(result);
 });
 
-// Export the app
-module.export = serverless(app);
+// Export the app wrapped serverless-http
+module.exports = serverless(app);
