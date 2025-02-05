@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const serverless = require('serverless-http');
+const { process_params } = require('express/lib/router');
 
 // Creating express app
 const app = express();
@@ -60,7 +61,48 @@ function isArmstrong(n) {
 
 // GET endpoint:  /api/classify-number
 app.get('/api/classify-number', async (req, res) => {
-})
+    const { number } = req.query;
+
+    // Validate input: chck for valid integer
+    const vnum = Number(number);
+    if (number === undefined || isNaN(vnum) || !Number.isInteger(vnum)) {
+        return res.status(400).json({
+            number: number,
+            error: true
+            
+        });
+    }
+
+    // Get property arry based on Armstrong and parity property
+    let props = [];
+    if (isArmstrong(vnum)) {
+        props.push('armstrong');
+        props.push(vnum % 2 === 0 ? 'even' : 'odd');
+    } else {
+        props.push(vnum % 2 === 0 ? 'even' : 'odd');
+    }
+
+    // Fetch fun fact from number api (math)
+    let funFact = '';
+    try {
+        const response = await axios.get(`http://numbersapi.com/${vnum}/math?json`);
+        funFact = response.data.text;
+      } catch (error) {
+        funFact = 'No fun fact available at the moment.';
+      };
+
+    // response object
+    const result = {
+        number: vnum,
+        is_prime: isPrime(vnum),
+        is_perfect: isPerfect(vnum),
+        properties: props,
+        digit_sum: sumDigit(vnum),
+        funFact: funFact
+    };
+
+    return res.status(200).json(result);
+});
 
 // Export the app
 modules.export = serverless(app);
