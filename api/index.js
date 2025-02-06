@@ -50,14 +50,14 @@ function sumDigit(n) {
 
 // Helper function: Checks if a number ia an Armstrong number
 function isArmstrong(n) {
-    if (n < 0) return false;
-    const str = n.toString();
+    const absNum = Math.abs(n)
+    const str = absNum.toString();
     let numDigits = str.length;
     let sumPow = 0;
     for (let i = 0; i < numDigits; i++) {
         sumPow += Math.pow(parseInt(str.charAt(i), 10), numDigits);
     }
-    return sumPow === n;
+    return sumPow === absNum;
 }
 
 // GET endpoint:  /api/classify-number
@@ -66,12 +66,27 @@ app.get('/api/classify-number', async (req, res) => {
 
     // Validate input: chck for valid integer
     const vnum = Number(number);
-    if (number === undefined || number.toString().trim === "" || isNaN(vnum) || !Number.isInteger(vnum || vnum < 0)) {
+    let newNum = vnum;
+    if (number === undefined || number.toString().trim === "" || !/^-?\d+$/.test(number.toString())) {
         return res.status(400).json({
             number: number,
             error: true
             
         });
+    }
+
+    // Fetch fun fact from number api (math)
+    let funFact = '';
+    if (vnum < 0) {
+	    funFact = 'No fun fact available for negative numbers.';
+    } else {
+        try {
+            const apiUrl = `http://numbersapi.com/${vnum}/math?json`;
+            const response = await axios.get(apiUrl);
+            funFact = response.data.text;
+        } catch (error) {
+            funFact = 'No fun fact available at the moment.';
+        }
     }
 
     // Get property arry based on Armstrong and parity property
@@ -83,23 +98,14 @@ app.get('/api/classify-number', async (req, res) => {
         props.push(vnum % 2 === 0 ? 'even' : 'odd');
     }
 
-    // Fetch fun fact from number api (math)
-    let funFact = '';
-    try {
-        const apiUrl = `http://numbersapi.com/${vnum}/math?json`;
-        const response = await axios.get(apiUrl);
-        funFact = response.data.text;
-      } catch (error) {
-        funFact = 'No fun fact available at the moment.';
-      }
-
     // response object
+    if (vnum < 0) newNum = vnum * -1;
     const result = {
         number: vnum,
         is_prime: isPrime(vnum),
-        is_perfect: isPerfect(vnum),
+        is_perfect: isPerfect(newNum),
         properties: props,
-        digit_sum: sumDigit(vnum),
+        digit_sum: sumDigit(newNum),
         fun_fact: funFact
     };
 
