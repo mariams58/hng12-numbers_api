@@ -1,8 +1,8 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const serverless = require('serverless-http');
-const { process_params } = require('express/lib/router');
+// const serverless = require('serverless-http');
+
 
 // Creating express app
 const app = express();
@@ -16,7 +16,7 @@ function isPrime(n) {
   if (n <= 3) return true;
   if (n % 2 === 0 || n % 3 === 0) return false;
   const sqrt = Math.sqrt(n);
-  for (let i = 3; i < sqrt; i+= 2) {
+  for (let i = 3; i <= sqrt; i += 2) {
     if (n % i === 0) return false;
   }
   return true;
@@ -24,12 +24,12 @@ function isPrime(n) {
 
 // Helper function: Checks if a number is a perfect number
 function isPerfect(n) {
-    if (n <= 0) return false;
+    if (n <= 1) return false;
     let sum = 1;
     for (let i = 2; i <= Math.sqrt(n); i++) {
         if (n % i === 0) {
             sum += i;
-            if (i != n / i) {
+            if (i !== n / i) {
                 sum += n / i;
             }
         }
@@ -51,10 +51,11 @@ function sumDigit(n) {
 // Helper function: Checks if a number ia an Armstrong number
 function isArmstrong(n) {
     if (n < 0) return false;
-    let numDigits = n.length;
+    const str = n.toString();
+    let numDigits = str.length;
     let sumPow = 0;
-    for (let i =0; i < numDigits; i++)   {
-        sumPow += Math.pow(n.charAt(i), numDigits);
+    for (let i = 0; i < numDigits; i++) {
+        sumPow += Math.pow(parseInt(str.charAt(i), 10), numDigits);
     }
     return sumPow === n;
 }
@@ -65,7 +66,7 @@ app.get('/api/classify-number', async (req, res) => {
 
     // Validate input: chck for valid integer
     const vnum = Number(number);
-    if (number === undefined || isNaN(vnum) || !Number.isInteger(vnum)) {
+    if (number === undefined || number.toString().trim === "" || isNaN(vnum) || !Number.isInteger(vnum || vnum < 0)) {
         return res.status(400).json({
             number: number,
             error: true
@@ -85,7 +86,8 @@ app.get('/api/classify-number', async (req, res) => {
     // Fetch fun fact from number api (math)
     let funFact = '';
     try {
-        const response = await axios.get(`http://numbersapi.com/${vnum}/math?json`);
+        const apiUrl = `http://numbersapi.com/${vnum}/math?json`;
+        const response = await axios.get(apiUrl);
         funFact = response.data.text;
       } catch (error) {
         funFact = 'No fun fact available at the moment.';
@@ -98,11 +100,12 @@ app.get('/api/classify-number', async (req, res) => {
         is_perfect: isPerfect(vnum),
         properties: props,
         digit_sum: sumDigit(vnum),
-        funFact: funFact
+        fun_fact: funFact
     };
 
     return res.status(200).json(result);
 });
 
+app.listen(3000, () => console.log("Server ready on port 3000"));
 // Export the app wrapped serverless-http
-module.exports = serverless(app);
+module.exports = app;
