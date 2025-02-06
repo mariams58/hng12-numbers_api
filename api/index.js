@@ -67,7 +67,7 @@ app.get('/api/classify-number', async (req, res) => {
     // Validate input: chck for valid integer
     const vnum = Number(number);
     let newNum = vnum;
-    if (number === undefined || number.toString().trim === "" || !/^-?\d+$/.test(number.toString())) {
+    if (!number || number.toString().trim === "" || !/^-?\d+$/.test(number.toString())) {
         return res.status(400).json({
             number: number,
             error: true
